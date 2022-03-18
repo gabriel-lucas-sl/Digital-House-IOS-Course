@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class CalculatorViewController: UIViewController {
     
     let calculator = [
         ["AC", "+/-", "%", "÷"],
@@ -16,9 +16,12 @@ class ViewController: UIViewController {
         ["1", "2", "3", "+"],
         ["0", ",", "="]
     ]
+    
+    var lastValue: Double?
+    var nextValue: Double?
     var clearZero = true
-    var operation = ""
-    var lastValue = ""
+    var math = ""
+
     
     // MARK: - Properties
     
@@ -95,46 +98,94 @@ class ViewController: UIViewController {
     // MARK: - Selectors
     
     @objc func selectButton(_ sender: UIButton) {
-        let title = sender.currentTitle!
-        let currentInput = numberTextField.placeholder!
+        let currentValue = sender.currentTitle!
         
-        if let titleAsNumber = Int(title) {
+        if let _ = Double(currentValue) {
             if clearZero {
                 numberTextField.placeholder! = ""
                 clearZero = false
             }
-            numberTextField.placeholder! += String(titleAsNumber)
-        } else {
-            switch title {
-            case "AC":
-                numberTextField.placeholder! = "0"
-                clearZero = true
-            case "+/-":
-                print("NAO SEI")
-            case "%":
-                if let number = Double(currentInput) {
-                    let count = number/100
-                    numberTextField.placeholder! = String(count)
-                } else {
-                    print("It's not a number")
-                }
-            case "÷":
-                print("DIVISAO")
-            case "x":
-                print("MULTIPLICACAO")
-            case "-":
-                print("SUB")
-            case "+":
-                print("PLUS")
-            case "=":
-                print("EQUAL")
-                clearZero = true
-                numberTextField.placeholder! = ""
-            default:
-                print(title)
+            numberTextField.placeholder! += currentValue
+            
+            if math == "" {
+                lastValue = Double(numberTextField.placeholder!)
             }
         }
         
+        if math != "" {
+            print("TEMOS UMA CONTA PARA REALIZAR", math)
+            // se eu tenho lastValue armazenados
+            // e o meu currentValue é um número
+            // armazena nextValue
+            
+            if let _ = lastValue {
+                if let currentNumber = Double(currentValue) {
+                    nextValue = currentNumber
+                }
+            }
+        }
+        
+        switch currentValue {
+        case "AC":
+            numberTextField.placeholder! = "0"
+            lastValue = 0
+            clearZero = true
+        case "+/-":
+            if let value = lastValue {
+                numberTextField.placeholder! = String(describing: -value)
+                lastValue = -value
+                clearZero = true
+            }
+        case "%":
+            if let value = lastValue {
+                let count = value / 100
+                numberTextField.placeholder! = String(describing: count)
+                lastValue = value
+                clearZero = true
+            }
+        case "÷":
+            math = "÷"
+            clearZero = true
+        case "x":
+            math = "x"
+            clearZero = true
+        case "-":
+            math = "-"
+            clearZero = true
+        case "+":
+            math = "+"
+            clearZero = true
+        case "=":
+            // se meu math == "="
+            // faz a conta do meu last math
+            if math != "" {
+                switch math {
+                case "÷":
+                    let count = lastValue! / nextValue!
+                    numberTextField.placeholder! = String(describing: count)
+                    math = ""
+                case "x":
+                    let count = lastValue! * nextValue!
+                    numberTextField.placeholder! = String(describing: count)
+                    math = ""
+                case "-":
+                    let count = lastValue! - nextValue!
+                    numberTextField.placeholder! = String(describing: count)
+                    math = ""
+                case "+":
+                    let count = lastValue! + nextValue!
+                    numberTextField.placeholder! = String(describing: count)
+                    math = ""
+                default:
+                    print()
+                }
+            }
+        case ",":
+            // TODO: Implement
+            break
+        default:
+            print()
+        }
     }
     
     // MARK: - Helpers
